@@ -1,23 +1,33 @@
+import os
 import pandas as pd
-
 
 INPUT_PATH = "data/raw/adzuna_jobs.csv"
 OUTPUT_PATH = "data/processed/clean_jobs.csv"
 
 
-# Load raw data
-df = pd.read_csv(INPUT_PATH)
-
-print("Original dataset shape:", df.shape)
+print("=" * 60)
+print("CAREER INTELLIGENCE PLATFORM - DATA CLEANING")
+print("=" * 60)
 
 
 # --------------------------------------------------
-# 1. Remove duplicate jobs
+# 1. Load raw dataset
+# --------------------------------------------------
+
+df = pd.read_csv(INPUT_PATH)
+
+print("\nOriginal dataset shape:", df.shape)
+
+
+# --------------------------------------------------
+# 2. Remove duplicate jobs
 # --------------------------------------------------
 
 before = len(df)
 
-df = df.drop_duplicates(subset="id")
+df = df.drop_duplicates(
+    subset="id"
+)
 
 after = len(df)
 
@@ -25,7 +35,7 @@ print("Duplicate jobs removed:", before - after)
 
 
 # --------------------------------------------------
-# 2. Select useful columns
+# 3. Select useful columns
 # --------------------------------------------------
 
 columns = [
@@ -36,48 +46,69 @@ columns = [
     "location.display_name",
     "category.label",
     "category.tag",
+    "search_role",
     "created",
     "contract_time",
     "contract_type",
+    "salary_min",
+    "salary_max",
     "salary_is_predicted",
     "latitude",
     "longitude",
     "redirect_url"
 ]
 
-df = df[columns]
+# Keep only columns that exist
+available_columns = [
+    column
+    for column in columns
+    if column in df.columns
+]
+
+df = df[available_columns]
 
 
 # --------------------------------------------------
-# 3. Rename columns
+# 4. Rename columns
 # --------------------------------------------------
 
-df = df.rename(columns={
-    "company.display_name": "company",
-    "location.display_name": "location",
-    "category.label": "category",
-    "category.tag": "category_tag"
-})
+df = df.rename(
+    columns={
+        "company.display_name": "company",
+        "location.display_name": "location",
+        "category.label": "category",
+        "category.tag": "category_tag"
+    }
+)
 
 
 # --------------------------------------------------
-# 4. Remove rows without descriptions
+# 5. Remove jobs without descriptions
 # --------------------------------------------------
 
 before = len(df)
 
-df = df.dropna(subset=["description"])
+df = df.dropna(
+    subset=["description"]
+)
 
 after = len(df)
 
-print("Jobs without descriptions removed:", before - after)
+print(
+    "Jobs without descriptions removed:",
+    before - after
+)
 
 
 # --------------------------------------------------
-# 5. Clean text columns
+# 6. Clean text fields
 # --------------------------------------------------
 
-df["title"] = df["title"].fillna("").str.strip()
+df["title"] = (
+    df["title"]
+    .fillna("")
+    .str.strip()
+)
 
 df["description"] = (
     df["description"]
@@ -98,9 +129,15 @@ df["location"] = (
     .str.strip()
 )
 
+df["search_role"] = (
+    df["search_role"]
+    .fillna("Unknown")
+    .str.strip()
+)
+
 
 # --------------------------------------------------
-# 6. Convert date
+# 7. Convert date column
 # --------------------------------------------------
 
 df["created"] = pd.to_datetime(
@@ -110,16 +147,44 @@ df["created"] = pd.to_datetime(
 
 
 # --------------------------------------------------
-# 7. Create processed-data directory
+# 8. Create salary range feature
 # --------------------------------------------------
 
-import os
-
-os.makedirs("data/processed", exist_ok=True)
+df["salary_range"] = (
+    df["salary_max"] - df["salary_min"]
+)
 
 
 # --------------------------------------------------
-# 8. Save cleaned dataset
+# 9. Create average salary feature
+# --------------------------------------------------
+
+df["salary_avg"] = (
+    df["salary_min"] + df["salary_max"]
+) / 2
+
+
+# --------------------------------------------------
+# 10. Create description length
+# --------------------------------------------------
+
+df["description_length"] = (
+    df["description"].str.len()
+)
+
+
+# --------------------------------------------------
+# 11. Create output directory
+# --------------------------------------------------
+
+os.makedirs(
+    "data/processed",
+    exist_ok=True
+)
+
+
+# --------------------------------------------------
+# 12. Save cleaned dataset
 # --------------------------------------------------
 
 df.to_csv(
@@ -129,12 +194,33 @@ df.to_csv(
 
 
 # --------------------------------------------------
-# 9. Final information
+# 13. Data quality report
 # --------------------------------------------------
 
 print("\nCleaned dataset shape:", df.shape)
 
-print("\nMissing values:")
-print(df.isnull().sum())
+print("\nJobs by search role:")
+print(
+    df["search_role"].value_counts()
+)
 
-print(f"\nCleaned data saved to: {OUTPUT_PATH}")
+print("\nMissing values:")
+print(
+    df.isnull().sum()
+    .sort_values(ascending=False)
+)
+
+print("\nSalary coverage:")
+
+salary_count = df["salary_avg"].notna().sum()
+
+print(
+    f"Jobs with salary information: "
+    f"{salary_count}/{len(df)}"
+)
+
+print(
+    f"\nCleaned data saved to: {OUTPUT_PATH}"
+)
+
+print("\nData cleaning completed successfully.")

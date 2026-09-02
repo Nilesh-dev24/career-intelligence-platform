@@ -1,30 +1,72 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
 INPUT_PATH = "data/processed/clean_jobs.csv"
+OUTPUT_DIR = "data/processed/eda"
+
+
+# --------------------------------------------------
+# 1. Load dataset
+# --------------------------------------------------
 
 df = pd.read_csv(INPUT_PATH)
 
+os.makedirs(
+    OUTPUT_DIR,
+    exist_ok=True
+)
+
 
 print("=" * 60)
-print("CAREER INTELLIGENCE PLATFORM - EDA")
+print("CAREER INTELLIGENCE PLATFORM - EDA V2")
 print("=" * 60)
 
-
-# --------------------------------------------------
-# 1. Dataset overview
-# --------------------------------------------------
 
 print("\nDataset shape:")
 print(df.shape)
+
+
+# --------------------------------------------------
+# 2. Basic dataset information
+# --------------------------------------------------
 
 print("\nData types:")
 print(df.dtypes)
 
 
 # --------------------------------------------------
-# 2. Most common job titles
+# 3. Jobs by career role
+# --------------------------------------------------
+
+role_counts = df["search_role"].value_counts()
+
+print("\nJobs by career role:")
+print(role_counts)
+
+
+plt.figure(figsize=(10, 6))
+
+role_counts.sort_values().plot(
+    kind="barh"
+)
+
+plt.title("Jobs by Career Role")
+plt.xlabel("Number of Jobs")
+plt.ylabel("Career Role")
+
+plt.tight_layout()
+
+plt.savefig(
+    f"{OUTPUT_DIR}/jobs_by_role.png",
+    dpi=150
+)
+
+plt.show()
+
+
+# --------------------------------------------------
+# 4. Top job titles
 # --------------------------------------------------
 
 print("\nTop 20 job titles:")
@@ -37,7 +79,7 @@ print(
 
 
 # --------------------------------------------------
-# 3. Companies hiring
+# 5. Top companies
 # --------------------------------------------------
 
 print("\nTop 20 companies:")
@@ -50,10 +92,10 @@ print(
 
 
 # --------------------------------------------------
-# 4. Locations
+# 6. Top locations
 # --------------------------------------------------
 
-print("\nTop locations:")
+print("\nTop 20 locations:")
 
 print(
     df["location"]
@@ -63,7 +105,7 @@ print(
 
 
 # --------------------------------------------------
-# 5. Categories
+# 7. Job categories
 # --------------------------------------------------
 
 print("\nJob categories:")
@@ -75,32 +117,132 @@ print(
 
 
 # --------------------------------------------------
-# 6. Salary prediction availability
+# 8. Description length
 # --------------------------------------------------
 
-print("\nSalary prediction distribution:")
+print("\nDescription length statistics:")
 
 print(
-    df["salary_is_predicted"]
-    .value_counts()
+    df["description_length"]
+    .describe()
+)
+
+
+print("\nDescription length by career role:")
+
+print(
+    df.groupby("search_role")["description_length"]
+    .describe()
 )
 
 
 # --------------------------------------------------
-# 7. Description length
+# 9. Salary analysis
 # --------------------------------------------------
 
-df["description_length"] = df["description"].str.len()
+salary_data = df[
+    df["salary_avg"].notna()
+]
 
-print("\nDescription statistics:")
+print("\nSalary information:")
 
 print(
-    df["description_length"].describe()
+    f"Jobs with salary data: "
+    f"{len(salary_data)}/{len(df)}"
+)
+
+
+if len(salary_data) > 0:
+
+    print("\nSalary statistics:")
+
+    print(
+        salary_data[
+            ["salary_min", "salary_max", "salary_avg"]
+        ].describe()
+    )
+
+    print("\nAverage salary by career role:")
+
+    print(
+        salary_data
+        .groupby("search_role")["salary_avg"]
+        .agg(["count", "mean", "min", "max"])
+        .sort_values("mean", ascending=False)
+    )
+
+
+# --------------------------------------------------
+# 10. Salary coverage by role
+# --------------------------------------------------
+
+salary_coverage = (
+    df.groupby("search_role")["salary_avg"]
+    .apply(lambda x: x.notna().sum())
+    .sort_values(ascending=False)
+)
+
+print("\nSalary coverage by role:")
+
+print(salary_coverage)
+
+
+# --------------------------------------------------
+# 11. Contract information
+# --------------------------------------------------
+
+print("\nContract type distribution:")
+
+print(
+    df["contract_type"]
+    .value_counts(dropna=False)
+)
+
+
+print("\nContract time distribution:")
+
+print(
+    df["contract_time"]
+    .value_counts(dropna=False)
 )
 
 
 # --------------------------------------------------
-# 8. Visualize top locations
+# 12. Save role summary
+# --------------------------------------------------
+
+role_summary = (
+    df.groupby("search_role")
+    .agg(
+        job_count=("id", "count"),
+        avg_description_length=(
+            "description_length",
+            "mean"
+        ),
+        salary_jobs=(
+            "salary_avg",
+            lambda x: x.notna().sum()
+        )
+    )
+    .sort_values(
+        "job_count",
+        ascending=False
+    )
+)
+
+role_summary.to_csv(
+    f"{OUTPUT_DIR}/role_summary.csv"
+)
+
+
+print(
+    f"\nRole summary saved to: "
+    f"{OUTPUT_DIR}/role_summary.csv"
+)
+
+
+# --------------------------------------------------
+# 13. Top locations visualization
 # --------------------------------------------------
 
 top_locations = (
@@ -108,6 +250,7 @@ top_locations = (
     .value_counts()
     .head(10)
 )
+
 
 plt.figure(figsize=(10, 6))
 
@@ -122,11 +265,43 @@ plt.ylabel("Location")
 plt.tight_layout()
 
 plt.savefig(
-    "data/processed/top_locations.png",
+    f"{OUTPUT_DIR}/top_locations.png",
     dpi=150
 )
 
 plt.show()
 
 
-print("\nEDA completed successfully.")
+# --------------------------------------------------
+# 14. Jobs by role visualization
+# --------------------------------------------------
+
+role_counts = (
+    df["search_role"]
+    .value_counts()
+)
+
+
+plt.figure(figsize=(10, 6))
+
+role_counts.sort_values().plot(
+    kind="barh"
+)
+
+plt.title("Career Role Distribution")
+plt.xlabel("Number of Jobs")
+plt.ylabel("Career Role")
+
+plt.tight_layout()
+
+plt.savefig(
+    f"{OUTPUT_DIR}/career_role_distribution.png",
+    dpi=150
+)
+
+plt.show()
+
+
+print("\n" + "=" * 60)
+print("EDA V2 COMPLETED SUCCESSFULLY")
+print("=" * 60)
