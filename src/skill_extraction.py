@@ -25,21 +25,21 @@ SKILLS = {
     ],
 
     "R": [
-        r"\br\b",
         "r programming",
-        "r language"
+        "r language",
+        r"\br\b"
     ],
 
     "Java": [
-        "java"
+        r"\bjava\b"
     ],
 
     "C++": [
-        "c++"
+        r"\bc\+\+\b"
     ],
 
     "C#": [
-        "c#",
+        r"\bc#\b",
         "c sharp"
     ],
 
@@ -76,7 +76,7 @@ SKILLS = {
 
     "NLP": [
         "natural language processing",
-        "nlp"
+        r"\bnlp\b"
     ],
 
     "Computer Vision": [
@@ -85,48 +85,48 @@ SKILLS = {
 
     "Generative AI": [
         "generative ai",
-        "genai",
-        "gen ai"
+        r"\bgenai\b",
+        r"\bgen ai\b"
     ],
 
     "LLM": [
         "large language model",
         "large language models",
-        "llm",
-        "llms"
+        r"\bllm\b",
+        r"\bllms\b"
     ],
 
     "AWS": [
-        "aws",
+        r"\baws\b",
         "amazon web services"
     ],
 
     "Azure": [
-        "azure",
+        r"\bazure\b",
         "microsoft azure"
     ],
 
     "GCP": [
-        "gcp",
+        r"\bgcp\b",
         "google cloud",
         "google cloud platform"
     ],
 
     "Docker": [
-        "docker"
+        r"\bdocker\b"
     ],
 
     "Kubernetes": [
-        "kubernetes"
+        r"\bkubernetes\b"
     ],
 
     "Apache Spark": [
         "apache spark",
-        "spark"
+        r"\bspark\b"
     ],
 
     "Hadoop": [
-        "hadoop"
+        r"\bhadoop\b"
     ],
 
     "Databricks": [
@@ -134,8 +134,14 @@ SKILLS = {
     ],
 
     "Git": [
-        "git",
-        "github"
+        r"\bgit\b",
+        r"\bgithub\b",
+        r"\bgitlab\b",
+        r"\bbitbucket\b",
+        r"\bgit\s*/\s*github\b",
+        r"\bgithub\s*/\s*git\b",
+        r"\bgit\s+github\b",
+        r"\bgithub\s+git\b"
     ],
 
     "Power BI": [
@@ -148,7 +154,7 @@ SKILLS = {
     ],
 
     "Excel": [
-        "excel",
+        r"\bexcel\b",
         "microsoft excel"
     ],
 
@@ -164,18 +170,18 @@ SKILLS = {
     ],
 
     "ETL": [
-        "etl",
+        r"\betl\b",
         "extract transform load",
         "extract, transform, load"
     ],
 
     "Airflow": [
-        "airflow",
+        r"\bairflow\b",
         "apache airflow"
     ],
 
     "Kafka": [
-        "kafka",
+        r"\bkafka\b",
         "apache kafka"
     ],
 
@@ -197,7 +203,7 @@ SKILLS = {
 df = pd.read_csv(INPUT_PATH)
 
 print("=" * 60)
-print("CAREER INTELLIGENCE PLATFORM - SKILL EXTRACTION V1")
+print("CAREER INTELLIGENCE PLATFORM - SKILL EXTRACTION V2")
 print("=" * 60)
 
 print("\nDataset shape:")
@@ -210,9 +216,8 @@ print(df.shape)
 
 def extract_skills(text):
     """
-    Extract skills from a job description.
-
-    Returns a list of matched skills.
+    Extract skills from a job description
+    using boundary-aware pattern matching.
     """
 
     if pd.isna(text):
@@ -226,12 +231,8 @@ def extract_skills(text):
 
         for pattern in patterns:
 
-            # Escape literal skill names so characters such as
-            # +, #, and . are treated as normal characters.
-            safe_pattern = re.escape(pattern)
-
             if re.search(
-                safe_pattern,
+                pattern,
                 text,
                 flags=re.IGNORECASE
             ):
@@ -262,7 +263,6 @@ df["skill_count"] = (
 
 
 print("\nSkill extraction completed.")
-
 
 print("\nSkill count statistics:")
 
@@ -361,4 +361,4 @@ print(
 )
 
 
-print("\nSkill extraction completed successfully.")
+print("\nSkill extraction V2 completed successfully.")
