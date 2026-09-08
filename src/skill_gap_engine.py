@@ -1,13 +1,9 @@
 import os
 import pandas as pd
 
+
 INPUT_PATH = "data/processed/skill_analysis/role_skill_report.csv"
 OUTPUT_PATH = "data/processed/skill_analysis/skill_gap_report.csv"
-
-
-print("=" * 60)
-print("CAREER INTELLIGENCE PLATFORM - SKILL GAP ENGINE V2")
-print("=" * 60)
 
 
 # ---------------------------------------------------------
@@ -15,9 +11,6 @@ print("=" * 60)
 # ---------------------------------------------------------
 
 df = pd.read_csv(INPUT_PATH)
-
-print("\nSkill report loaded.")
-print("Dataset shape:", df.shape)
 
 
 # ---------------------------------------------------------
@@ -63,7 +56,6 @@ def calculate_skill_gap(
     )
 
     if role_skills.empty:
-        print(f"\nNo skill data found for role: {role}")
         return None
 
     # Normalize user skills
@@ -123,102 +115,17 @@ def calculate_skill_gap(
 
 
 # ---------------------------------------------------------
-# USER PROFILE
+# CAREER READINESS
 # ---------------------------------------------------------
 
-user_skills = [
-    "Python",
-    "SQL",
-    "Pandas"
-]
+def calculate_readiness(result):
 
-target_role = "data scientist"
-
-
-print("\nTarget career:")
-print(target_role.title())
-
-print("\nUser skills:")
-
-for skill in user_skills:
-    print(f"  ✓ {skill}")
-
-
-# ---------------------------------------------------------
-# RUN SKILL GAP ANALYSIS
-# ---------------------------------------------------------
-
-result = calculate_skill_gap(
-    role=target_role,
-    user_skills=user_skills,
-    minimum_percentage=5
-)
-
-
-if result is not None:
-
-    # -----------------------------------------------------
-    # DISPLAY COMPLETE ANALYSIS
-    # -----------------------------------------------------
-
-    print("\n" + "=" * 60)
-    print("SKILL GAP ANALYSIS")
-    print("=" * 60)
-
-    display_columns = [
-        "skill",
-        "job_count",
-        "percentage",
-        "status",
-        "priority"
-    ]
-
-    print(
-        result[display_columns].to_string(
-            index=False
-        )
-    )
-
-
-    # -----------------------------------------------------
-    # MISSING SKILLS
-    # -----------------------------------------------------
-
-    missing = result[
-        result["status"] == "Missing"
-    ].copy()
-
-    missing = missing.reset_index(
-        drop=True
-    )
-
-
-    print("\n" + "=" * 60)
-    print("PRIORITIZED SKILL GAPS")
-    print("=" * 60)
-
-
-    if missing.empty:
-
-        print(
-            "Excellent! No major skill gaps detected."
-        )
-
-    else:
-
-        for index, row in missing.iterrows():
-
-            print(
-                f"{index + 1}. "
-                f"{row['skill']} "
-                f"- {row['priority']} priority "
-                f"({row['percentage']:.2f}% of jobs)"
-            )
-
-
-    # -----------------------------------------------------
-    # CAREER READINESS
-    # -----------------------------------------------------
+    if result is None or result.empty:
+        return {
+            "total_skills": 0,
+            "matched_skills": 0,
+            "readiness_percentage": 0.0
+        }
 
     total_skills = len(result)
 
@@ -228,71 +135,57 @@ if result is not None:
         ]
     )
 
-    match_percentage = (
+    readiness_percentage = (
         matched_skills /
         total_skills *
         100
     )
 
-
-    print("\n" + "=" * 60)
-    print("CAREER READINESS")
-    print("=" * 60)
-
-    print(
-        f"Skill match: "
-        f"{matched_skills}/{total_skills}"
-    )
-
-    print(
-        f"Readiness score: "
-        f"{match_percentage:.1f}%"
-    )
+    return {
+        "total_skills": total_skills,
+        "matched_skills": matched_skills,
+        "readiness_percentage": readiness_percentage
+    }
 
 
-    # -----------------------------------------------------
-    # PRIORITY SUMMARY
-    # -----------------------------------------------------
+# ---------------------------------------------------------
+# PRIORITY SUMMARY
+# ---------------------------------------------------------
 
-    high_priority = len(
-        missing[
-            missing["priority"] == "High"
-        ]
-    )
+def get_priority_summary(result):
 
-    medium_priority = len(
-        missing[
-            missing["priority"] == "Medium"
-        ]
-    )
+    if result is None or result.empty:
+        return {
+            "high_priority": 0,
+            "medium_priority": 0,
+            "low_priority": 0
+        }
 
-    low_priority = len(
-        missing[
-            missing["priority"] == "Low"
-        ]
-    )
+    missing = result[
+        result["status"] == "Missing"
+    ]
 
-
-    print("\n" + "=" * 60)
-    print("GAP SUMMARY")
-    print("=" * 60)
-
-    print(
-        f"High priority gaps: {high_priority}"
-    )
-
-    print(
-        f"Medium priority gaps: {medium_priority}"
-    )
-
-    print(
-        f"Low priority gaps: {low_priority}"
-    )
+    return {
+        "high_priority": len(
+            missing[missing["priority"] == "High"]
+        ),
+        "medium_priority": len(
+            missing[missing["priority"] == "Medium"]
+        ),
+        "low_priority": len(
+            missing[missing["priority"] == "Low"]
+        )
+    }
 
 
-    # -----------------------------------------------------
-    # SAVE REPORT
-    # -----------------------------------------------------
+# ---------------------------------------------------------
+# SAVE REPORT
+# ---------------------------------------------------------
+
+def save_skill_gap_report(result):
+
+    if result is None:
+        return
 
     os.makedirs(
         "data/processed/skill_analysis",
@@ -304,10 +197,162 @@ if result is not None:
         index=False
     )
 
-    print(
-        f"\nSkill gap report saved to:"
-        f" {OUTPUT_PATH}"
+
+# ---------------------------------------------------------
+# COMMAND-LINE TEST
+# ---------------------------------------------------------
+
+if __name__ == "__main__":
+
+    print("=" * 60)
+    print("CAREER INTELLIGENCE PLATFORM - SKILL GAP ENGINE V3")
+    print("=" * 60)
+
+    user_skills = [
+        "Python",
+        "SQL",
+        "Pandas"
+    ]
+
+    target_role = "data scientist"
+
+    print("\nTarget career:")
+    print(target_role.title())
+
+    print("\nUser skills:")
+
+    for skill in user_skills:
+        print(f"  ✓ {skill}")
+
+    # -----------------------------------------------------
+    # RUN SKILL GAP ANALYSIS
+    # -----------------------------------------------------
+
+    result = calculate_skill_gap(
+        role=target_role,
+        user_skills=user_skills,
+        minimum_percentage=5
     )
 
+    if result is None:
 
-print("\nSkill Gap Engine V2 completed successfully.")
+        print(
+            f"\nNo skill data found for role: "
+            f"{target_role}"
+        )
+
+    else:
+
+        # -------------------------------------------------
+        # DISPLAY COMPLETE ANALYSIS
+        # -------------------------------------------------
+
+        print("\n" + "=" * 60)
+        print("SKILL GAP ANALYSIS")
+        print("=" * 60)
+
+        display_columns = [
+            "skill",
+            "job_count",
+            "percentage",
+            "status",
+            "priority"
+        ]
+
+        print(
+            result[display_columns].to_string(
+                index=False
+            )
+        )
+
+        # -------------------------------------------------
+        # MISSING SKILLS
+        # -------------------------------------------------
+
+        missing = result[
+            result["status"] == "Missing"
+        ].copy()
+
+        missing = missing.reset_index(
+            drop=True
+        )
+
+        print("\n" + "=" * 60)
+        print("PRIORITIZED SKILL GAPS")
+        print("=" * 60)
+
+        if missing.empty:
+
+            print(
+                "Excellent! No major skill gaps detected."
+            )
+
+        else:
+
+            for index, row in missing.iterrows():
+
+                print(
+                    f"{index + 1}. "
+                    f"{row['skill']} "
+                    f"- {row['priority']} priority "
+                    f"({row['percentage']:.2f}% of jobs)"
+                )
+
+        # -------------------------------------------------
+        # CAREER READINESS
+        # -------------------------------------------------
+
+        readiness = calculate_readiness(result)
+
+        print("\n" + "=" * 60)
+        print("CAREER READINESS")
+        print("=" * 60)
+
+        print(
+            f"Skill match: "
+            f"{readiness['matched_skills']}/"
+            f"{readiness['total_skills']}"
+        )
+
+        print(
+            f"Readiness score: "
+            f"{readiness['readiness_percentage']:.1f}%"
+        )
+
+        # -------------------------------------------------
+        # PRIORITY SUMMARY
+        # -------------------------------------------------
+
+        priority_summary = get_priority_summary(result)
+
+        print("\n" + "=" * 60)
+        print("GAP SUMMARY")
+        print("=" * 60)
+
+        print(
+            f"High priority gaps: "
+            f"{priority_summary['high_priority']}"
+        )
+
+        print(
+            f"Medium priority gaps: "
+            f"{priority_summary['medium_priority']}"
+        )
+
+        print(
+            f"Low priority gaps: "
+            f"{priority_summary['low_priority']}"
+        )
+
+        # -------------------------------------------------
+        # SAVE REPORT
+        # -------------------------------------------------
+
+        save_skill_gap_report(result)
+
+        print(
+            f"\nSkill gap report saved to:"
+            f" {OUTPUT_PATH}"
+        )
+
+    print("\nSkill Gap Engine V3 completed successfully.")

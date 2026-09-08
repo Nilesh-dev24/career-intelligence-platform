@@ -9,22 +9,31 @@ import streamlit as st
 # PROJECT PATH
 # ---------------------------------------------------------
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
+# ---------------------------------------------------------
+# IMPORT ML COMPONENTS
+# ---------------------------------------------------------
+
 from src.ml_job_recommender import recommend_jobs
+from src.skill_gap_engine import (
+    calculate_skill_gap,
+    calculate_readiness,
+    get_priority_summary
+)
 
 
 # ---------------------------------------------------------
-# PAGE CONFIGURATION
+# PAGE CONFIG
 # ---------------------------------------------------------
 
 st.set_page_config(
     page_title="Career Intelligence Platform",
-    page_icon="🚀",
+    page_icon="🎯",
     layout="wide"
 )
 
@@ -33,37 +42,34 @@ st.set_page_config(
 # HEADER
 # ---------------------------------------------------------
 
-st.title("🚀 Career Intelligence Platform")
+st.title("🎯 Career Intelligence Platform")
 
 st.write(
-    "An ML-powered platform for personalized job "
-    "recommendations and career intelligence."
+    "AI-powered career analysis using real job market data."
 )
 
-st.divider()
-
 
 # ---------------------------------------------------------
-# CAREER PROFILE
+# USER PROFILE
 # ---------------------------------------------------------
 
-st.header("👤 Build Your Career Profile")
+st.header("👤 Your Career Profile")
 
 target_role = st.selectbox(
-    "What role are you targeting?",
+    "Target Role",
     [
         "Data Scientist",
         "Machine Learning Engineer",
         "Data Analyst",
         "Data Engineer",
         "AI Engineer",
-        "Business Analyst",
+        "Business Analyst"
     ]
 )
 
 
 skills = st.multiselect(
-    "Select your current skills",
+    "Your Skills",
     [
         "Python",
         "SQL",
@@ -84,35 +90,39 @@ skills = st.multiselect(
         "Tableau",
         "Excel",
         "Docker",
-        "Apache Spark",
+        "Apache Spark"
     ]
 )
-
-
-st.divider()
 
 
 # ---------------------------------------------------------
 # ANALYZE BUTTON
 # ---------------------------------------------------------
 
-if st.button(
-    "🔍 Analyze My Career",
+analyze = st.button(
+    "🚀 Analyze Career",
     type="primary"
-):
+)
+
+
+if analyze:
 
     if not skills:
 
         st.warning(
-            "Please select at least one skill "
-            "before analyzing your profile."
+            "Please select at least one skill before "
+            "running the analysis."
         )
 
     else:
 
-        with st.spinner(
-            "Running the ML recommendation engine..."
-        ):
+        # -------------------------------------------------
+        # JOB RECOMMENDATIONS
+        # -------------------------------------------------
+
+        st.header("💼 Job Recommendations")
+
+        with st.spinner("Analyzing job opportunities..."):
 
             recommendations = recommend_jobs(
                 target_role=target_role,
@@ -121,144 +131,308 @@ if st.button(
                 save_output=False
             )
 
+        if recommendations.empty:
 
-        # -------------------------------------------------
-        # PROFILE SUMMARY
-        # -------------------------------------------------
-
-        st.success(
-            "Career analysis completed successfully!"
-        )
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            st.metric(
-                "Target Role",
-                target_role
+            st.error(
+                "No job recommendations were found."
             )
 
-        with col2:
-            st.metric(
-                "Current Skills",
-                len(skills)
-            )
+        else:
 
-        with col3:
-            st.metric(
-                "Jobs Analyzed",
-                len(recommendations)
-            )
+            # -------------------------------------------------
+            # PROFILE SUMMARY
+            # -------------------------------------------------
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.metric(
+                    "Target Role",
+                    target_role
+                )
+
+            with col2:
+                st.metric(
+                    "Your Skills",
+                    len(skills)
+                )
+
+            with col3:
+                st.metric(
+                    "Recommendations",
+                    len(recommendations)
+                )
 
 
-        st.divider()
+            st.divider()
 
 
-        # -------------------------------------------------
-        # JOB RECOMMENDATIONS
-        # -------------------------------------------------
+            # -------------------------------------------------
+            # DISPLAY RECOMMENDATIONS
+            # -------------------------------------------------
 
-        st.header("🎯 Recommended Jobs")
+            for index, (_, job) in enumerate(
+                recommendations.iterrows(),
+                start=1
+            ):
 
-        st.caption(
-            "Ranked using your hybrid ML recommendation engine."
-        )
-
-
-        for _, job in recommendations.iterrows():
-
-            score = job[
-                "ml_recommendation_score"
-            ]
-
-            with st.container():
+                score = job["ml_recommendation_score"]
 
                 st.subheader(
-                    f"#{int(job['ml_recommendation_rank'])} "
-                    f"{job['title']}"
+                    f"{index}. {job['title']}"
                 )
 
                 col1, col2, col3 = st.columns(3)
 
                 with col1:
+
                     st.write(
-                        f"🏢 **Company:** "
+                        f"**Company:** "
                         f"{job['company']}"
                     )
 
                 with col2:
+
                     st.write(
-                        f"📍 **Location:** "
+                        f"**Location:** "
                         f"{job['location']}"
                     )
 
                 with col3:
+
                     st.write(
-                        f"🎯 **Match:** "
+                        f"**Match Score:** "
                         f"{score:.2f}%"
                     )
 
 
-                st.write(
-                    f"**Matched skills:** "
-                    f"{job['matched_skills'] or 'None detected'}"
+                matched_skills = job.get(
+                    "matched_skills",
+                    ""
+                )
+
+                missing_skills = job.get(
+                    "missing_skills",
+                    ""
                 )
 
 
-                st.write(
-                    f"**Missing detected skills:** "
-                    f"{job['missing_skills'] or 'None detected'}"
-                )
+                if pd.notna(matched_skills) and matched_skills:
+
+                    st.write(
+                        f"✅ **Matched skills:** "
+                        f"{matched_skills}"
+                    )
+
+                else:
+
+                    st.write(
+                        "✅ **Matched skills:** None detected"
+                    )
+
+
+                if pd.notna(missing_skills) and missing_skills:
+
+                    st.write(
+                        f"⚠️ **Skills not detected in job "
+                        f"data:** {missing_skills}"
+                    )
 
 
                 with st.expander(
                     "Why was this job recommended?"
                 ):
 
-                    col1, col2 = st.columns(2)
-
-                    with col1:
-
-                        st.write(
-                            f"**Content similarity:** "
-                            f"{job['content_similarity']:.2f}%"
-                        )
-
-                        st.write(
-                            f"**Role similarity:** "
-                            f"{job['role_similarity']:.2f}%"
-                        )
-
-                    with col2:
-
-                        st.write(
-                            f"**Target-role skill match:** "
-                            f"{job['skill_match']:.2f}%"
-                        )
-
-                        st.write(
-                            f"**Job-specific skill fit:** "
-                            f"{job['job_skill_fit']:.2f}%"
-                        )
-
-
                     st.write(
-                        "**Job description snippet:**"
+                        f"**Content similarity:** "
+                        f"{job['content_similarity']:.2f}"
                     )
 
                     st.write(
-                        job["description"]
+                        f"**Role similarity:** "
+                        f"{job['role_similarity']:.2f}"
+                    )
+
+                    st.write(
+                        f"**Target-role skill match:** "
+                        f"{job['skill_match']:.2f}"
+                    )
+
+                    st.write(
+                        f"**Job-specific skill fit:** "
+                        f"{job['job_skill_fit']:.2f}"
                     )
 
 
-                if (
-                    "redirect_url" in job
-                    and pd.notna(job["redirect_url"])
-                ):
+                    description = job.get(
+                        "description",
+                        ""
+                    )
+
+                    if pd.notna(description) and description:
+
+                        st.write("**Job Description**")
+
+                        st.write(description)
+
+
+                job_url = job.get(
+                    "redirect_url",
+                    ""
+                )
+
+                if pd.notna(job_url) and job_url:
+
                     st.link_button(
                         "View Job",
-                        job["redirect_url"]
+                        job_url
                     )
 
 
                 st.divider()
+
+
+        # -------------------------------------------------
+        # SKILL GAP ANALYSIS
+        # -------------------------------------------------
+
+        st.header("📊 Skill Gap Analysis")
+
+        with st.spinner("Analyzing your skill gaps..."):
+
+            skill_gap = calculate_skill_gap(
+                role=target_role,
+                user_skills=skills,
+                minimum_percentage=5
+            )
+
+
+        if skill_gap is None or skill_gap.empty:
+
+            st.warning(
+                f"No skill-demand data was found for "
+                f"{target_role}."
+            )
+
+        else:
+
+            # -------------------------------------------------
+            # CAREER READINESS
+            # -------------------------------------------------
+
+            readiness = calculate_readiness(
+                skill_gap
+            )
+
+            priority_summary = get_priority_summary(
+                skill_gap
+            )
+
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+
+                st.metric(
+                    "Career Readiness",
+                    f"{readiness['readiness_percentage']:.1f}%"
+                )
+
+            with col2:
+
+                st.metric(
+                    "Skills You Have",
+                    readiness["matched_skills"]
+                )
+
+            with col3:
+
+                st.metric(
+                    "Skills Analyzed",
+                    readiness["total_skills"]
+                )
+
+            with col4:
+
+                st.metric(
+                    "High Priority Gaps",
+                    priority_summary["high_priority"]
+                )
+
+
+            st.divider()
+
+
+            # -------------------------------------------------
+            # SKILL GAP TABLE
+            # -------------------------------------------------
+
+            display_columns = [
+                "skill",
+                "job_count",
+                "percentage",
+                "status",
+                "priority"
+            ]
+
+            display_data = skill_gap[
+                display_columns
+            ].copy()
+
+            display_data = display_data.rename(
+                columns={
+                    "skill": "Skill",
+                    "job_count": "Jobs",
+                    "percentage": "Demand %",
+                    "status": "Status",
+                    "priority": "Priority"
+                }
+            )
+
+
+            st.dataframe(
+                display_data,
+                use_container_width=True,
+                hide_index=True
+            )
+
+
+            # -------------------------------------------------
+            # PRIORITIZED GAPS
+            # -------------------------------------------------
+
+            missing = skill_gap[
+                skill_gap["status"] == "Missing"
+            ].copy()
+
+
+            st.subheader(
+                "🎯 Prioritized Skill Gaps"
+            )
+
+
+            if missing.empty:
+
+                st.success(
+                    "Excellent! No major skill gaps detected."
+                )
+
+            else:
+
+                for index, (_, row) in enumerate(
+                    missing.iterrows(),
+                    start=1
+                ):
+
+                    st.write(
+                        f"**{index}. {row['skill']}** — "
+                        f"{row['priority']} priority "
+                        f"({row['percentage']:.2f}% "
+                        f"of jobs)"
+                    )
+
+
+st.caption(
+    "Career Intelligence Platform • "
+    "Powered by job market data and machine learning"
+)
