@@ -20,11 +20,14 @@ if str(PROJECT_ROOT) not in sys.path:
 # ---------------------------------------------------------
 
 from src.ml_job_recommender import recommend_jobs
+
 from src.skill_gap_engine import (
     calculate_skill_gap,
     calculate_readiness,
     get_priority_summary
 )
+
+from src.career_roadmap import build_career_roadmap
 
 
 # ---------------------------------------------------------
@@ -162,7 +165,6 @@ if analyze:
                     "Recommendations",
                     len(recommendations)
                 )
-
 
             st.divider()
 
@@ -392,7 +394,7 @@ if analyze:
 
             st.dataframe(
                 display_data,
-                use_container_width=True,
+                width="stretch",
                 hide_index=True
             )
 
@@ -430,6 +432,152 @@ if analyze:
                         f"({row['percentage']:.2f}% "
                         f"of jobs)"
                     )
+
+
+            # -------------------------------------------------
+            # PERSONALIZED CAREER ROADMAP
+            # -------------------------------------------------
+
+            st.divider()
+
+            st.header("🗺️ Personalized Career Roadmap")
+
+            with st.spinner(
+                "Building your personalized learning roadmap..."
+            ):
+
+                roadmap = build_career_roadmap(
+                    user_skills=skills,
+                    skill_gap_df=skill_gap
+                )
+
+
+            if roadmap.empty:
+
+                st.success(
+                    "🎉 You already have all the skills "
+                    "identified for this career path!"
+                )
+
+            else:
+
+                # -------------------------------------------------
+                # ROADMAP SUMMARY
+                # -------------------------------------------------
+
+                total_to_learn = len(roadmap)
+
+                high_priority = len(
+                    roadmap[
+                        roadmap["priority"] == "High"
+                    ]
+                )
+
+                first_phase = roadmap.iloc[0]["phase"]
+
+                first_skill = roadmap.iloc[0]["skill"]
+
+
+                col1, col2, col3, col4 = st.columns(4)
+
+                with col1:
+
+                    st.metric(
+                        "Skills to Learn",
+                        total_to_learn
+                    )
+
+                with col2:
+
+                    st.metric(
+                        "High Priority",
+                        high_priority
+                    )
+
+                with col3:
+
+                    st.metric(
+                        "Starting Phase",
+                        first_phase
+                    )
+
+                with col4:
+
+                    st.metric(
+                        "Start With",
+                        first_skill
+                    )
+
+
+                st.divider()
+
+
+                # -------------------------------------------------
+                # ROADMAP BY PHASE
+                # -------------------------------------------------
+
+                phases = roadmap["phase"].drop_duplicates().tolist()
+
+
+                for phase in phases:
+
+                    st.subheader(
+                        f"📍 {phase}"
+                    )
+
+                    phase_data = roadmap[
+                        roadmap["phase"] == phase
+                    ]
+
+
+                    for _, row in phase_data.iterrows():
+
+                        order = row["learning_order"]
+                        skill = row["skill"]
+                        priority = row["priority"]
+                        demand = row["job_demand_percentage"]
+                        dependencies = row["dependencies"]
+
+
+                        with st.container(border=True):
+
+                            col1, col2 = st.columns([4, 1])
+
+                            with col1:
+
+                                st.write(
+                                    f"### {int(order)}. {skill}"
+                                )
+
+                            with col2:
+
+                                st.write(
+                                    f"**{priority}**"
+                                )
+
+
+                            st.write(
+                                f"📈 **Job demand:** "
+                                f"{demand:.2f}%"
+                            )
+
+
+                            if dependencies:
+
+                                st.write(
+                                    f"🔗 **Prerequisites:** "
+                                    f"{dependencies}"
+                                )
+
+                            else:
+
+                                st.write(
+                                    "🔗 **Prerequisites:** "
+                                    "None"
+                                )
+
+
+                    st.write("")
 
 
 st.caption(
