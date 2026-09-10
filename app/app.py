@@ -1,3 +1,8 @@
+# =========================================================
+# CAREER INTELLIGENCE PLATFORM
+# Main Streamlit Application
+# =========================================================
+
 import sys
 from pathlib import Path
 
@@ -5,20 +10,9 @@ import pandas as pd
 import streamlit as st
 
 
-# ---------------------------------------------------------
-# PAGE CONFIG
-# ---------------------------------------------------------
-
-st.set_page_config(
-    page_title="Career Intelligence Platform",
-    page_icon="🎯",
-    layout="wide"
-)
-
-
-# ---------------------------------------------------------
+# =========================================================
 # PROJECT PATH
-# ---------------------------------------------------------
+# =========================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,24 +20,36 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
-# ---------------------------------------------------------
+# =========================================================
 # IMPORT ML COMPONENTS
-# ---------------------------------------------------------
+# =========================================================
 
 from src.ml_job_recommender import recommend_jobs
 
 from src.skill_gap_engine import (
     calculate_skill_gap,
     calculate_readiness,
-    get_priority_summary
+    get_priority_summary,
 )
 
 from src.career_roadmap import build_career_roadmap
 
 
-# ---------------------------------------------------------
+# =========================================================
+# PAGE CONFIGURATION
+# =========================================================
+
+st.set_page_config(
+    page_title="Career Intelligence Platform",
+    page_icon="🎯",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+
+# =========================================================
 # SESSION STATE
-# ---------------------------------------------------------
+# =========================================================
 
 if "analysis_complete" not in st.session_state:
     st.session_state.analysis_complete = False
@@ -64,17 +70,16 @@ if "skills" not in st.session_state:
     st.session_state.skills = []
 
 
-# ---------------------------------------------------------
+# =========================================================
 # SIDEBAR
-# ---------------------------------------------------------
+# =========================================================
 
 with st.sidebar:
 
     st.title("🎯 Career Intelligence")
 
-    st.write(
-        "AI-powered career analysis "
-        "using real job market data."
+    st.caption(
+        "AI-powered career analysis"
     )
 
     st.divider()
@@ -86,8 +91,8 @@ with st.sidebar:
             "💼 Job Recommendations",
             "📊 Skill Gap",
             "🗺️ Career Roadmap",
-            "ℹ️ About"
-        ]
+            "ℹ️ About",
+        ],
     )
 
     st.divider()
@@ -101,9 +106,9 @@ with st.sidebar:
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # MAIN HEADER
-# ---------------------------------------------------------
+# =========================================================
 
 st.title("🎯 Career Intelligence Platform")
 
@@ -122,16 +127,14 @@ if page == "ℹ️ About":
 
     st.write(
         """
-        The Career Intelligence Platform is a machine-learning
-        powered career analysis application designed to help
-        users understand their career fit and identify the
-        skills they should learn next.
+        The **Career Intelligence Platform** is a machine-learning
+        powered career analysis application designed to help users
+        understand their career readiness and discover relevant
+        opportunities.
         """
     )
 
     st.divider()
-
-    st.subheader("🚀 What the platform does")
 
     col1, col2 = st.columns(2)
 
@@ -143,7 +146,7 @@ if page == "ℹ️ About":
 
             Recommends relevant jobs using a hybrid ML
             recommendation system based on job content,
-            target role similarity, and skill matching.
+            target-role similarity, and skill matching.
 
             **📊 Skill Gap Analysis**
 
@@ -180,9 +183,13 @@ if page == "ℹ️ About":
 
         • Target-role similarity
 
-        • Skill-demand analysis
+        • Skill matching
 
-        • Personalized skill-gap detection
+        • Hybrid recommendation scoring
+
+        • Explainable job recommendations
+
+        • Data-driven skill gap analysis
 
         • Dependency-aware career roadmap
         """
@@ -190,132 +197,121 @@ if page == "ℹ️ About":
 
     st.divider()
 
-    st.subheader("📊 Data Source")
-
-    st.write(
-        """
-        Job-market information is collected from the
-        Adzuna Jobs API and processed through the platform's
-        data pipeline.
-        """
-    )
-
     st.info(
-        "The platform's skill detection is based on the "
-        "job-description data available to the system."
+        "Job market data is sourced from the Adzuna API."
     )
+
+    st.stop()
 
 
 # =========================================================
-# PROFILE PAGE / INPUT
+# PROFILE INPUT
 # =========================================================
 
 elif page in [
     "🏠 Dashboard",
     "💼 Job Recommendations",
     "📊 Skill Gap",
-    "🗺️ Career Roadmap"
+    "🗺️ Career Roadmap",
 ]:
-
-    # -----------------------------------------------------
-    # USER PROFILE
-    # -----------------------------------------------------
 
     st.header("👤 Your Career Profile")
 
-    target_role = st.selectbox(
-        "Target Role",
-        [
-            "Data Scientist",
-            "Machine Learning Engineer",
-            "Data Analyst",
-            "Data Engineer",
-            "AI Engineer",
-            "Business Analyst"
-        ],
-        index=0
-    )
+    col1, col2 = st.columns([1, 2])
 
+    with col1:
 
-    skills = st.multiselect(
-        "Your Skills",
-        [
-            "Python",
-            "SQL",
-            "Pandas",
-            "NumPy",
-            "Scikit-learn",
-            "Machine Learning",
-            "Deep Learning",
-            "NLP",
-            "Generative AI",
-            "LLM",
-            "Statistics",
-            "Git",
-            "AWS",
-            "Azure",
-            "GCP",
-            "Power BI",
-            "Tableau",
-            "Excel",
-            "Docker",
-            "Apache Spark"
-        ]
-    )
+        target_role = st.selectbox(
+            "Target Role",
+            [
+                "Data Scientist",
+                "Machine Learning Engineer",
+                "Data Analyst",
+                "Data Engineer",
+                "AI Engineer",
+                "Business Analyst",
+            ],
+            index=0,
+        )
 
+    with col2:
+
+        skills = st.multiselect(
+            "Your Skills",
+            [
+                "Python",
+                "SQL",
+                "Pandas",
+                "NumPy",
+                "Scikit-learn",
+                "Machine Learning",
+                "Deep Learning",
+                "NLP",
+                "Generative AI",
+                "LLM",
+                "Statistics",
+                "Git",
+                "AWS",
+                "Azure",
+                "GCP",
+                "Docker",
+                "Power BI",
+                "Tableau",
+                "Excel",
+                "Data Visualization",
+            ],
+        )
+
+    st.divider()
 
     analyze = st.button(
-        "🚀 Analyze Career",
-        type="primary"
+        "🚀 Analyze My Career",
+        type="primary",
+        width="stretch",
     )
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # RUN ANALYSIS
-    # -----------------------------------------------------
+    # =====================================================
 
     if analyze:
 
         if not skills:
 
             st.warning(
-                "Please select at least one skill before "
-                "running the analysis."
+                "Please select at least one skill before analyzing."
             )
 
             st.stop()
-
 
         with st.spinner(
             "Analyzing your career profile..."
         ):
 
-            # ---------------------------------------------
+            # -------------------------------------------------
             # JOB RECOMMENDATIONS
-            # ---------------------------------------------
+            # -------------------------------------------------
 
             recommendations = recommend_jobs(
                 target_role=target_role,
                 user_skills=skills,
                 top_k=10,
-                save_output=False
+                save_output=False,
             )
 
-
-            # ---------------------------------------------
+            # -------------------------------------------------
             # SKILL GAP
-            # ---------------------------------------------
+            # -------------------------------------------------
 
             skill_gap = calculate_skill_gap(
                 role=target_role,
                 user_skills=skills,
-                minimum_percentage=5
+                minimum_percentage=5,
             )
 
-
-            # ---------------------------------------------
-            # ROADMAP
-            # ---------------------------------------------
+            # -------------------------------------------------
+            # CAREER ROADMAP
+            # -------------------------------------------------
 
             if (
                 skill_gap is not None
@@ -324,17 +320,16 @@ elif page in [
 
                 roadmap = build_career_roadmap(
                     user_skills=skills,
-                    skill_gap_df=skill_gap
+                    skill_gap_df=skill_gap,
                 )
 
             else:
 
                 roadmap = pd.DataFrame()
 
-
-        # ---------------------------------------------
+        # -----------------------------------------------------
         # SAVE RESULTS IN SESSION
-        # ---------------------------------------------
+        # -----------------------------------------------------
 
         st.session_state.analysis_complete = True
 
@@ -342,14 +337,7 @@ elif page in [
             recommendations
         )
 
-        if skill_gap is not None:
-
-            st.session_state.skill_gap = skill_gap
-
-        else:
-
-            st.session_state.skill_gap = pd.DataFrame()
-
+        st.session_state.skill_gap = skill_gap
 
         st.session_state.roadmap = roadmap
 
@@ -357,849 +345,909 @@ elif page in [
 
         st.session_state.skills = skills
 
-
         st.success(
-            "Career analysis completed successfully!"
+            "Career analysis completed successfully."
         )
 
+
+# =========================================================
+# LOAD SESSION RESULTS
+# =========================================================
+
+recommendations = st.session_state.recommendations
+
+skill_gap = st.session_state.skill_gap
+
+roadmap = st.session_state.roadmap
+
+analysis_complete = st.session_state.analysis_complete
+
+
+# =========================================================
+# DASHBOARD
+# =========================================================
+
+if page == "🏠 Dashboard":
+
+    st.header("📈 Career Dashboard")
+
+    if not analysis_complete:
+
+        st.info(
+            "Select your target role and skills above, "
+            "then click **Analyze My Career** to generate "
+            "your personalized dashboard."
+        )
+
+        st.stop()
 
     # -----------------------------------------------------
-    # LOAD STORED RESULTS
+    # READINESS
     # -----------------------------------------------------
 
-    if st.session_state.analysis_complete:
+    readiness = calculate_readiness(
+        skill_gap
+    )
 
-        recommendations = (
-            st.session_state.recommendations
+    priority_summary = get_priority_summary(
+        skill_gap
+    )
+
+    total_skills = readiness.get(
+        "total_skills",
+        0,
+    )
+
+    matched_skills = readiness.get(
+        "matched_skills",
+        0,
+    )
+
+    readiness_percentage = readiness.get(
+        "readiness_percentage",
+        0,
+    )
+
+    high_priority = priority_summary.get(
+        "high",
+        0,
+    )
+
+    missing_count = (
+        total_skills - matched_skills
+    )
+
+    # -----------------------------------------------------
+    # METRICS
+    # -----------------------------------------------------
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+
+    with col1:
+
+        st.metric(
+            "Career Readiness",
+            f"{readiness_percentage:.1f}%",
         )
 
-        skill_gap = (
-            st.session_state.skill_gap
+    with col2:
+
+        st.metric(
+            "Your Skills",
+            len(st.session_state.skills),
         )
 
-        roadmap = (
-            st.session_state.roadmap
+    with col3:
+
+        st.metric(
+            "Recommended Jobs",
+            len(recommendations),
         )
 
-        target_role = (
+    with col4:
+
+        st.metric(
+            "High-Priority Gaps",
+            high_priority,
+        )
+
+    with col5:
+
+        st.metric(
+            "Skills to Learn",
+            missing_count,
+        )
+
+    st.divider()
+
+    # -----------------------------------------------------
+    # PROFILE OVERVIEW
+    # -----------------------------------------------------
+
+    st.subheader("👤 Profile Overview")
+
+    profile_col1, profile_col2 = st.columns(2)
+
+    with profile_col1:
+
+        st.markdown("**Target Role**")
+
+        st.info(
             st.session_state.target_role
         )
 
-        skills = (
-            st.session_state.skills
+    with profile_col2:
+
+        st.markdown("**Your Skills**")
+
+        st.info(
+            ", ".join(
+                st.session_state.skills
+            )
         )
 
+    st.divider()
 
-        # =================================================
-        # DASHBOARD
-        # =================================================
+    # -----------------------------------------------------
+    # TOP SKILL GAPS
+    # -----------------------------------------------------
 
-        if page == "🏠 Dashboard":
+    st.subheader("⚠️ Top Skill Gaps")
 
-            st.header("📊 Career Dashboard")
+    if skill_gap.empty:
 
-            # ---------------------------------------------
-            # READINESS
-            # ---------------------------------------------
+        st.success(
+            "No significant skill gaps were detected."
+        )
 
-            if (
-                skill_gap is not None
-                and not skill_gap.empty
-            ):
+    else:
 
-                readiness = calculate_readiness(
-                    skill_gap
-                )
+        missing = skill_gap[
+            skill_gap["status"] == "Missing"
+        ].copy()
 
-                priority_summary = (
-                    get_priority_summary(
-                        skill_gap
-                    )
-                )
+        if missing.empty:
 
-            else:
-
-                readiness = {
-                    "total_skills": 0,
-                    "matched_skills": 0,
-                    "readiness_percentage": 0.0
-                }
-
-                priority_summary = {
-                    "high_priority": 0,
-                    "medium_priority": 0,
-                    "low_priority": 0
-                }
-
-
-            total_jobs = len(
-                recommendations
+            st.success(
+                "Excellent! No missing skills were detected "
+                "for the selected threshold."
             )
 
-            total_to_learn = len(
-                roadmap
+        else:
+
+            missing = missing.sort_values(
+                "percentage",
+                ascending=False,
             )
 
-            high_priority_gaps = (
-                priority_summary["high_priority"]
+            display_columns = [
+                "skill",
+                "percentage",
+                "priority",
+            ]
+
+            st.dataframe(
+                missing[
+                    display_columns
+                ].head(5),
+                width="stretch",
+                hide_index=True,
             )
 
+    st.divider()
 
-            # ---------------------------------------------
-            # DASHBOARD METRICS
-            # ---------------------------------------------
+    # -----------------------------------------------------
+    # TOP JOB MATCHES
+    # -----------------------------------------------------
 
-            col1, col2, col3, col4, col5 = (
-                st.columns(5)
-            )
+    st.subheader("💼 Top Job Matches")
 
+    if recommendations.empty:
 
-            with col1:
+        st.warning(
+            "No job recommendations found."
+        )
 
-                st.metric(
-                    "Career Readiness",
-                    f"{readiness['readiness_percentage']:.1f}%"
-                )
+    else:
 
+        dashboard_jobs = (
+            recommendations.head(5)
+        )
 
-            with col2:
+        for index, (_, job) in enumerate(
+            dashboard_jobs.iterrows(),
+            start=1,
+        ):
 
-                st.metric(
-                    "Your Skills",
-                    len(skills)
-                )
+            score = job[
+                "ml_recommendation_score"
+            ]
 
-
-            with col3:
-
-                st.metric(
-                    "Recommended Jobs",
-                    total_jobs
-                )
-
-
-            with col4:
-
-                st.metric(
-                    "High-Priority Gaps",
-                    high_priority_gaps
-                )
-
-
-            with col5:
-
-                st.metric(
-                    "Skills to Learn",
-                    total_to_learn
-                )
-
-
-            st.divider()
-
-
-            # ---------------------------------------------
-            # PROFILE OVERVIEW
-            # ---------------------------------------------
-
-            col1, col2 = st.columns(2)
-
-
-            with col1:
-
-                st.subheader(
-                    "🎯 Career Profile"
-                )
-
-                st.write(
-                    f"**Target Role:** "
-                    f"{target_role}"
-                )
-
-                st.write(
-                    f"**Skills Selected:** "
-                    f"{len(skills)}"
-                )
-
-                st.write(
-                    "**Your Skills:** "
-                    + ", ".join(skills)
-                )
-
-
-            with col2:
-
-                st.subheader(
-                    "🚀 Recommended Next Step"
-                )
-
-                if (
-                    roadmap is not None
-                    and not roadmap.empty
-                ):
-
-                    first_skill = (
-                        roadmap.iloc[0]["skill"]
-                    )
-
-                    first_phase = (
-                        roadmap.iloc[0]["phase"]
-                    )
-
-                    st.write(
-                        f"**Start with:** "
-                        f"{first_skill}"
-                    )
-
-                    st.write(
-                        f"**Phase:** "
-                        f"{first_phase}"
-                    )
-
-                    st.write(
-                        f"**Skills remaining:** "
-                        f"{len(roadmap)}"
-                    )
-
-                else:
-
-                    st.success(
-                        "🎉 No additional skills "
-                        "were identified."
-                    )
-
-
-            st.divider()
-
-
-            # ---------------------------------------------
-            # TOP SKILL GAPS
-            # ---------------------------------------------
-
-            st.subheader(
-                "🎯 Top Skill Gaps"
+            st.write(
+                f"**{index}. {job['title']}** — "
+                f"{job['company']} — "
+                f"Match: {score:.2f}%"
             )
 
 
-            if (
-                skill_gap is not None
-                and not skill_gap.empty
-            ):
+# =========================================================
+# JOB RECOMMENDATIONS
+# =========================================================
 
-                missing = skill_gap[
-                    skill_gap["status"] == "Missing"
-                ].copy()
+elif page == "💼 Job Recommendations":
 
+    st.header("💼 Job Recommendations")
 
-                if missing.empty:
+    if not analysis_complete:
 
-                    st.success(
-                        "No major skill gaps detected."
-                    )
+        st.info(
+            "Run your career analysis first to generate "
+            "personalized job recommendations."
+        )
 
-                else:
+        st.stop()
 
-                    top_missing = missing.head(5)
+    if recommendations.empty:
 
+        st.error(
+            "No job recommendations were found. "
+            "Try changing your target role or skills."
+        )
 
-                    for index, (_, row) in enumerate(
-                        top_missing.iterrows(),
-                        start=1
-                    ):
+    else:
 
-                        st.write(
-                            f"**{index}. "
-                            f"{row['skill']}** — "
-                            f"{row['priority']} priority — "
-                            f"{row['percentage']:.2f}% "
-                            f"job demand"
-                        )
+        st.write(
+            f"Showing the top **{len(recommendations)}** "
+            f"ML-ranked job recommendations."
+        )
 
+        st.caption(
+            "Recommendations are ranked using job-content "
+            "similarity, target-role similarity, and skill matching."
+        )
 
-            st.divider()
+        st.divider()
 
+        # -------------------------------------------------
+        # JOB CARDS
+        # -------------------------------------------------
 
-            # ---------------------------------------------
-            # TOP JOBS
-            # ---------------------------------------------
+        for index, (_, job) in enumerate(
+            recommendations.iterrows(),
+            start=1,
+        ):
 
-            st.subheader(
-                "💼 Top Job Matches"
-            )
+            score = job[
+                "ml_recommendation_score"
+            ]
 
+            # -------------------------------------------------
+            # JOB CARD
+            # -------------------------------------------------
 
-            if recommendations.empty:
+            with st.container(border=True):
 
-                st.warning(
-                    "No job recommendations found."
+                # ---------------------------------------------
+                # JOB HEADER
+                # ---------------------------------------------
+
+                header_col1, header_col2 = st.columns(
+                    [4, 1]
                 )
 
-            else:
-
-                dashboard_jobs = (
-                    recommendations.head(5)
-                )
-
-
-                for index, (_, job) in enumerate(
-                    dashboard_jobs.iterrows(),
-                    start=1
-                ):
-
-                    score = (
-                        job[
-                            "ml_recommendation_score"
-                        ]
-                    )
-
-                    st.write(
-                        f"**{index}. "
-                        f"{job['title']}** — "
-                        f"{job['company']} — "
-                        f"Match: {score:.2f}%"
-                    )
-
-
-        # =================================================
-        # JOB RECOMMENDATIONS
-        # =================================================
-
-        elif page == "💼 Job Recommendations":
-
-            st.header(
-                "💼 Job Recommendations"
-            )
-
-
-            if recommendations.empty:
-
-                st.error(
-                    "No job recommendations were found."
-                )
-
-            else:
-
-                st.write(
-                    f"Showing the top "
-                    f"{len(recommendations)} "
-                    f"ML-ranked job recommendations."
-                )
-
-
-                st.divider()
-
-
-                for index, (_, job) in enumerate(
-                    recommendations.iterrows(),
-                    start=1
-                ):
-
-                    score = (
-                        job[
-                            "ml_recommendation_score"
-                        ]
-                    )
-
+                with header_col1:
 
                     st.subheader(
                         f"{index}. {job['title']}"
                     )
 
-
-                    col1, col2, col3 = (
-                        st.columns(3)
+                    st.caption(
+                        f"{job['company']} • "
+                        f"{job['location']}"
                     )
 
+                with header_col2:
 
-                    with col1:
-
-                        st.write(
-                            f"**Company:** "
-                            f"{job['company']}"
-                        )
-
-
-                    with col2:
-
-                        st.write(
-                            f"**Location:** "
-                            f"{job['location']}"
-                        )
-
-
-                    with col3:
-
-                        st.write(
-                            f"**Match Score:** "
-                            f"{score:.2f}%"
-                        )
-
-
-                    matched_skills = job.get(
-                        "matched_skills",
-                        ""
+                    st.metric(
+                        "Match",
+                        f"{score:.1f}%",
                     )
 
+                st.divider()
 
-                    missing_skills = job.get(
-                        "missing_skills",
-                        ""
-                    )
+                # ---------------------------------------------
+                # BASIC INFORMATION
+                # ---------------------------------------------
 
-
-                    if (
-                        pd.notna(matched_skills)
-                        and matched_skills
-                    ):
-
-                        st.write(
-                            f"✅ **Matched skills:** "
-                            f"{matched_skills}"
-                        )
-
-                    else:
-
-                        st.write(
-                            "✅ **Matched skills:** "
-                            "None detected"
-                        )
-
-
-                    if (
-                        pd.notna(missing_skills)
-                        and missing_skills
-                    ):
-
-                        st.write(
-                            f"⚠️ **Skills not detected "
-                            f"in job data:** "
-                            f"{missing_skills}"
-                        )
-
-
-                    with st.expander(
-                        "Why was this job recommended?"
-                    ):
-
-                        st.write(
-                            f"**Content similarity:** "
-                            f"{job['content_similarity']:.2f}"
-                        )
-
-                        st.write(
-                            f"**Role similarity:** "
-                            f"{job['role_similarity']:.2f}"
-                        )
-
-                        st.write(
-                            f"**Target-role skill match:** "
-                            f"{job['skill_match']:.2f}"
-                        )
-
-                        st.write(
-                            f"**Job-specific skill fit:** "
-                            f"{job['job_skill_fit']:.2f}"
-                        )
-
-
-                        description = job.get(
-                            "description",
-                            ""
-                        )
-
-
-                        if (
-                            pd.notna(description)
-                            and description
-                        ):
-
-                            st.write(
-                                "**Job Description**"
-                            )
-
-                            st.write(
-                                description
-                            )
-
-
-                    job_url = job.get(
-                        "redirect_url",
-                        ""
-                    )
-
-
-                    if (
-                        pd.notna(job_url)
-                        and job_url
-                    ):
-
-                        st.link_button(
-                            "View Job",
-                            job_url
-                        )
-
-
-                    st.divider()
-
-
-        # =================================================
-        # SKILL GAP
-        # =================================================
-
-        elif page == "📊 Skill Gap":
-
-            st.header(
-                "📊 Skill Gap Analysis"
-            )
-
-
-            if (
-                skill_gap is None
-                or skill_gap.empty
-            ):
-
-                st.warning(
-                    f"No skill-demand data was found "
-                    f"for {target_role}."
-                )
-
-            else:
-
-                readiness = calculate_readiness(
-                    skill_gap
-                )
-
-                priority_summary = (
-                    get_priority_summary(
-                        skill_gap
-                    )
-                )
-
-
-                # -----------------------------------------
-                # READINESS METRICS
-                # -----------------------------------------
-
-                col1, col2, col3, col4 = (
-                    st.columns(4)
-                )
-
+                col1, col2, col3 = st.columns(3)
 
                 with col1:
 
-                    st.metric(
-                        "Career Readiness",
-                        f"{readiness['readiness_percentage']:.1f}%"
+                    st.markdown(
+                        "**🏢 Company**"
                     )
 
+                    st.write(
+                        job["company"]
+                    )
 
                 with col2:
 
-                    st.metric(
-                        "Skills You Have",
-                        readiness["matched_skills"]
+                    st.markdown(
+                        "**📍 Location**"
                     )
 
+                    st.write(
+                        job["location"]
+                    )
 
                 with col3:
 
-                    st.metric(
-                        "Skills Analyzed",
-                        readiness["total_skills"]
+                    st.markdown(
+                        "**🎯 ML Match Score**"
                     )
 
-
-                with col4:
-
-                    st.metric(
-                        "High Priority Gaps",
-                        priority_summary[
-                            "high_priority"
-                        ]
+                    st.write(
+                        f"{score:.2f}%"
                     )
 
+                # ---------------------------------------------
+                # SKILL FIT
+                # ---------------------------------------------
 
-                st.divider()
-
-
-                # -----------------------------------------
-                # SKILL GAP TABLE
-                # -----------------------------------------
-
-                display_columns = [
-                    "skill",
-                    "job_count",
-                    "percentage",
-                    "status",
-                    "priority"
-                ]
-
-
-                display_data = skill_gap[
-                    display_columns
-                ].copy()
-
-
-                display_data = (
-                    display_data.rename(
-                        columns={
-                            "skill": "Skill",
-                            "job_count": "Jobs",
-                            "percentage": "Demand %",
-                            "status": "Status",
-                            "priority": "Priority"
-                        }
-                    )
+                st.markdown(
+                    "### 🧠 Skill Fit"
                 )
 
-
-                st.dataframe(
-                    display_data,
-                    width="stretch",
-                    hide_index=True
+                matched_skills = job.get(
+                    "matched_skills",
+                    "",
                 )
 
-
-                st.divider()
-
-
-                # -----------------------------------------
-                # MISSING SKILLS
-                # -----------------------------------------
-
-                st.subheader(
-                    "🎯 Prioritized Skill Gaps"
+                missing_skills = job.get(
+                    "missing_skills",
+                    "",
                 )
 
-
-                missing = skill_gap[
-                    skill_gap["status"] == "Missing"
-                ].copy()
-
-
-                if missing.empty:
+                if (
+                    pd.notna(matched_skills)
+                    and str(matched_skills).strip()
+                ):
 
                     st.success(
-                        "Excellent! No major skill gaps "
-                        "detected."
+                        f"Matched skills: "
+                        f"{matched_skills}"
                     )
 
                 else:
 
-                    for index, (_, row) in enumerate(
-                        missing.iterrows(),
-                        start=1
-                    ):
+                    st.info(
+                        "No matching skills were detected "
+                        "in the available job data."
+                    )
+
+                if (
+                    pd.notna(missing_skills)
+                    and str(missing_skills).strip()
+                ):
+
+                    st.warning(
+                        f"Skills not detected in available "
+                        f"job data: {missing_skills}"
+                    )
+
+                # ---------------------------------------------
+                # EXPLAINABILITY
+                # ---------------------------------------------
+
+                with st.expander(
+                    "🔍 Why was this job recommended?"
+                ):
+
+                    metric_col1, metric_col2 = (
+                        st.columns(2)
+                    )
+
+                    with metric_col1:
 
                         st.write(
-                            f"**{index}. "
-                            f"{row['skill']}** — "
-                            f"{row['priority']} priority "
-                            f"({row['percentage']:.2f}% "
-                            f"of jobs)"
+                            "**Content similarity**"
                         )
 
-
-        # =================================================
-        # CAREER ROADMAP
-        # =================================================
-
-        elif page == "🗺️ Career Roadmap":
-
-            st.header(
-                "🗺️ Personalized Career Roadmap"
-            )
-
-
-            if roadmap.empty:
-
-                st.success(
-                    "🎉 You already have all the skills "
-                    "identified for this career path!"
-                )
-
-            else:
-
-                # -----------------------------------------
-                # ROADMAP SUMMARY
-                # -----------------------------------------
-
-                total_to_learn = len(
-                    roadmap
-                )
-
-
-                high_priority = len(
-                    roadmap[
-                        roadmap["priority"] == "High"
-                    ]
-                )
-
-
-                first_phase = (
-                    roadmap.iloc[0]["phase"]
-                )
-
-
-                first_skill = (
-                    roadmap.iloc[0]["skill"]
-                )
-
-
-                col1, col2, col3, col4 = (
-                    st.columns(4)
-                )
-
-
-                with col1:
-
-                    st.metric(
-                        "Skills to Learn",
-                        total_to_learn
-                    )
-
-
-                with col2:
-
-                    st.metric(
-                        "High Priority",
-                        high_priority
-                    )
-
-
-                with col3:
-
-                    st.metric(
-                        "Starting Phase",
-                        first_phase
-                    )
-
-
-                with col4:
-
-                    st.metric(
-                        "Start With",
-                        first_skill
-                    )
-
-
-                st.divider()
-
-
-                # -----------------------------------------
-                # ROADMAP PHASES
-                # -----------------------------------------
-
-                phases = (
-                    roadmap["phase"]
-                    .drop_duplicates()
-                    .tolist()
-                )
-
-
-                for phase in phases:
-
-                    st.subheader(
-                        f"📍 {phase}"
-                    )
-
-
-                    phase_data = roadmap[
-                        roadmap["phase"] == phase
-                    ]
-
-
-                    for _, row in (
-                        phase_data.iterrows()
-                    ):
-
-                        order = (
-                            row["learning_order"]
-                        )
-
-                        skill = row["skill"]
-
-                        priority = row["priority"]
-
-                        demand = (
-                            row[
-                                "job_demand_percentage"
+                        content_similarity = float(
+                            job[
+                                "content_similarity"
                             ]
                         )
 
-                        dependencies = (
-                            row["dependencies"]
+                        st.progress(
+                            min(
+                                max(
+                                    content_similarity,
+                                    0.0,
+                                ),
+                                1.0,
+                            )
                         )
 
+                        st.caption(
+                            f"Score: "
+                            f"{content_similarity:.2f}"
+                        )
 
-                        with st.container(
-                            border=True
-                        ):
+                        st.write(
+                            "**Role similarity**"
+                        )
 
-                            col1, col2 = (
-                                st.columns([4, 1])
+                        role_similarity = float(
+                            job[
+                                "role_similarity"
+                            ]
+                        )
+
+                        st.progress(
+                            min(
+                                max(
+                                    role_similarity,
+                                    0.0,
+                                ),
+                                1.0,
                             )
+                        )
 
+                        st.caption(
+                            f"Score: "
+                            f"{role_similarity:.2f}"
+                        )
 
-                            with col1:
+                    with metric_col2:
 
-                                st.write(
-                                    f"### "
-                                    f"{int(order)}. "
-                                    f"{skill}"
-                                )
+                        st.write(
+                            "**Target-role skill match**"
+                        )
 
+                        skill_match = float(
+                            job[
+                                "skill_match"
+                            ]
+                        )
 
-                            with col2:
-
-                                st.write(
-                                    f"**{priority}**"
-                                )
-
-
-                            st.write(
-                                f"📈 **Job demand:** "
-                                f"{demand:.2f}%"
+                        st.progress(
+                            min(
+                                max(
+                                    skill_match,
+                                    0.0,
+                                ),
+                                1.0,
                             )
+                        )
+
+                        st.caption(
+                            f"Score: "
+                            f"{skill_match:.2f}"
+                        )
+
+                        st.write(
+                            "**Job-specific skill fit**"
+                        )
+
+                        job_skill_fit = float(
+                            job[
+                                "job_skill_fit"
+                            ]
+                        )
+
+                        st.progress(
+                            min(
+                                max(
+                                    job_skill_fit,
+                                    0.0,
+                                ),
+                                1.0,
+                            )
+                        )
+
+                        st.caption(
+                            f"Score: "
+                            f"{job_skill_fit:.2f}"
+                        )
+
+                    st.divider()
+
+                    st.caption(
+                        "The recommendation score combines "
+                        "job-content similarity, target-role "
+                        "similarity, and skill matching."
+                    )
+
+                # ---------------------------------------------
+                # JOB DESCRIPTION
+                # ---------------------------------------------
+
+                description = job.get(
+                    "description",
+                    "",
+                )
+
+                if (
+                    pd.notna(description)
+                    and str(description).strip()
+                ):
+
+                    with st.expander(
+                        "📄 Job Description"
+                    ):
+
+                        st.write(
+                            description
+                        )
+
+                # ---------------------------------------------
+                # JOB LINK
+                # ---------------------------------------------
+
+                redirect_url = job.get(
+                    "redirect_url",
+                    "",
+                )
+
+                if (
+                    pd.notna(redirect_url)
+                    and str(redirect_url).strip()
+                ):
+
+                    st.link_button(
+                        "🔗 View Job",
+                        str(redirect_url),
+                        width="stretch",
+                    )
+
+            st.write("")
 
 
-                            if dependencies:
+# =========================================================
+# SKILL GAP
+# =========================================================
 
-                                st.write(
-                                    f"🔗 **Prerequisites:** "
-                                    f"{dependencies}"
-                                )
+elif page == "📊 Skill Gap":
 
-                            else:
+    st.header("📊 Skill Gap Analysis")
 
-                                st.write(
-                                    "🔗 **Prerequisites:** "
-                                    "None"
-                                )
+    if not analysis_complete:
 
+        st.info(
+            "Run your career analysis first to generate "
+            "your personalized skill gap."
+        )
 
-                    st.write("")
+        st.stop()
 
+    if skill_gap.empty:
+
+        st.warning(
+            "No skill gap data is available."
+        )
 
     else:
 
-        # -----------------------------------------------------
-        # NO ANALYSIS YET
-        # -----------------------------------------------------
-
-        st.info(
-            "👆 Select your target role and skills, "
-            "then click **Analyze Career** to generate "
-            "your personalized career intelligence."
+        readiness = calculate_readiness(
+            skill_gap
         )
 
+        priority_summary = get_priority_summary(
+            skill_gap
+        )
 
-# ---------------------------------------------------------
+        # -------------------------------------------------
+        # READINESS METRICS
+        # -------------------------------------------------
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+
+            st.metric(
+                "Career Readiness",
+                f"{readiness['readiness_percentage']:.1f}%",
+            )
+
+        with col2:
+
+            st.metric(
+                "Skills Analyzed",
+                readiness["total_skills"],
+            )
+
+        with col3:
+
+            st.metric(
+                "Skills Matched",
+                readiness["matched_skills"],
+            )
+
+        with col4:
+
+            st.metric(
+                "Missing Skills",
+                (
+                    readiness["total_skills"]
+                    - readiness["matched_skills"]
+                ),
+            )
+
+        st.divider()
+
+        # -------------------------------------------------
+        # PRIORITY SUMMARY
+        # -------------------------------------------------
+
+        st.subheader(
+            "🎯 Priority Summary"
+        )
+
+        priority_col1, priority_col2, priority_col3 = (
+            st.columns(3)
+        )
+
+        with priority_col1:
+
+            st.metric(
+                "🔴 High Priority",
+                priority_summary.get("high", priority_summary.get("High", 0)),
+            )
+
+        with priority_col2:
+
+            st.metric(
+                "🟠 Medium Priority",
+                priority_summary.get("medium", priority_summary.get("Medium", 0)),
+            )
+
+        with priority_col3:
+
+            st.metric(
+                "🟢 Low Priority",
+                priority_summary.get("low", priority_summary.get("Low", 0)),
+            )
+
+        st.divider()
+
+        # -------------------------------------------------
+        # COMPLETE SKILL GAP TABLE
+        # -------------------------------------------------
+
+        st.subheader(
+            "📋 Detailed Skill Gap"
+        )
+
+        display_columns = [
+            "skill",
+            "percentage",
+            "status",
+            "priority",
+        ]
+
+        available_columns = [
+            column
+            for column in display_columns
+            if column in skill_gap.columns
+        ]
+
+        st.dataframe(
+            skill_gap[
+                available_columns
+            ],
+            width="stretch",
+            hide_index=True,
+        )
+
+        st.divider()
+
+        # -------------------------------------------------
+        # PRIORITIZED MISSING SKILLS
+        # -------------------------------------------------
+
+        st.subheader(
+            "🚀 Skills You Should Learn"
+        )
+
+        missing = skill_gap[
+            skill_gap["status"] == "Missing"
+        ].copy()
+
+        if missing.empty:
+
+            st.success(
+                "You currently have all skills "
+                "identified as important for this role."
+            )
+
+        else:
+
+            missing = missing.sort_values(
+                "percentage",
+                ascending=False,
+            )
+
+            for index, (_, row) in enumerate(
+                missing.iterrows(),
+                start=1,
+            ):
+
+                skill = row["skill"]
+
+                demand = row[
+                    "percentage"
+                ]
+
+                priority = row[
+                    "priority"
+                ]
+
+                with st.container(border=True):
+
+                    col1, col2, col3 = st.columns(
+                        [3, 2, 1]
+                    )
+
+                    with col1:
+
+                        st.markdown(
+                            f"**{index}. {skill}**"
+                        )
+
+                    with col2:
+
+                        st.write(
+                            f"Job demand: "
+                            f"{demand:.2f}%"
+                        )
+
+                    with col3:
+
+                        st.write(
+                            f"**{priority}**"
+                        )
+
+
+# =========================================================
+# CAREER ROADMAP
+# =========================================================
+
+elif page == "🗺️ Career Roadmap":
+
+    st.header("🗺️ Personalized Career Roadmap")
+
+    if not analysis_complete:
+
+        st.info(
+            "Run your career analysis first to generate "
+            "your personalized roadmap."
+        )
+
+        st.stop()
+
+    if roadmap.empty:
+
+        st.warning(
+            "No roadmap could be generated."
+        )
+
+    else:
+
+        st.write(
+            "A dependency-aware learning sequence "
+            "based on your current skills and target role."
+        )
+
+        st.divider()
+
+        # -------------------------------------------------
+        # ROADMAP OVERVIEW
+        # -------------------------------------------------
+
+        st.subheader(
+            "📚 Learning Plan"
+        )
+
+        st.write(
+            f"**Target Role:** "
+            f"{st.session_state.target_role}"
+        )
+
+        st.write(
+            f"**Skills You Currently Have:** "
+            f"{', '.join(st.session_state.skills)}"
+        )
+
+        st.divider()
+
+        # -------------------------------------------------
+        # PHASES
+        # -------------------------------------------------
+
+        phases = roadmap[
+            "phase"
+        ].dropna().unique()
+
+        for phase in phases:
+
+            phase_data = roadmap[
+                roadmap["phase"] == phase
+            ].copy()
+
+            if phase_data.empty:
+                continue
+
+            phase_order = phase_data[
+                "learning_order"
+            ].min()
+
+            st.subheader(
+                f"Phase {int(phase_order)} — {phase}"
+            )
+
+            for _, row in phase_data.iterrows():
+
+                skill = row["skill"]
+
+                priority = row[
+                    "priority"
+                ]
+
+                demand = row[
+                    "job_demand_percentage"
+                ]
+
+                dependencies = row.get(
+                    "dependencies",
+                    "",
+                )
+
+                with st.container(border=True):
+
+                    col1, col2, col3 = st.columns(
+                        [3, 1, 2]
+                    )
+
+                    with col1:
+
+                        st.markdown(
+                            f"**{skill}**"
+                        )
+
+                    with col2:
+
+                        st.write(
+                            f"{priority}"
+                        )
+
+                    with col3:
+
+                        st.write(
+                            f"Demand: {demand:.2f}%"
+                        )
+
+                    if (
+                        pd.notna(dependencies)
+                        and str(dependencies).strip()
+                    ):
+
+                        st.caption(
+                            f"Prerequisites: "
+                            f"{dependencies}"
+                        )
+
+            st.write("")
+
+
+# =========================================================
 # FOOTER
-# ---------------------------------------------------------
+# =========================================================
 
 st.divider()
 
 st.caption(
-    "Career Intelligence Platform • "
-    "Powered by job market data and machine learning"
+    "🎯 Career Intelligence Platform • "
+    "Machine Learning powered career analysis"
 )
